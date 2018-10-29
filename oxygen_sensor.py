@@ -18,37 +18,47 @@ import csv
 from gpiozero import LED
 import RPi.GPIO as GPIO
 
+
+#hardware constants declarations
 green = LED(27)
 red = LED(22)
 toggleSwitch = 12
 
+#serial bus declaration
 serial_handler = serial.Serial('/dev/ttyS0',9600,timeout=0)
 
+#Settings for GPIO and serial bus
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(toggleSwitch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-number_samples = 0
+samples_taken = 0
+samples_goal = 30
 
-while True:
+buffer_time = 0.5
+
+def main():
     try:
-        time.sleep(0.5)
-        ser_bytes = serial_handler.readline()
-        if(GPIO.input(toggleSwitch)):
-          print("on")
-          with open("/var/www/html/oxygendata.csv","a") as f:
-            if(ser_bytes!=''):
-              writer = csv.writer(f,delimiter=",")
-              writer.writerow([time.time(),time.strftime("%a %d-%m-%Y @ %H:%M:%S"),ser_bytes])
-              green.on()
-              number_samples = number_samples + 1
-              if(number_samples == 30):
-                red.on()
-        else:
-          number_samples = 0
-          print("off")
-          green.off()
-          red.off()
+      time.sleep(buffer_time)
+      ser_bytes = serial_handler.readline()
+      if(GPIO.input(toggleSwitch)):
+        with open("/var/www/html/oxygendata.csv","a") as f:
+          if(ser_bytes!=''):
+            writer = csv.writer(f,delimiter=",")
+            writer.writerow([time.time(),time.strftime("%a %d-%m-%Y @ %H:%M:%S"),ser_bytes])
+            green.on()
+            samples_taken = samples_taken + 1
+          if(samples_takenples == samples_goal):
+            red.on()
+    else:
+      samples_taken = 0
+      print("off")
+      green.off()
+      red.off()
 
     except:
         print("Keyboard Interrupt")
         break
+
+
+while True:
+    main()
