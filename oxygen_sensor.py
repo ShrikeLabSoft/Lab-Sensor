@@ -18,6 +18,10 @@ import csv
 from gpiozero import LED
 import RPi.GPIO as GPIO
 
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import random
+
 
 #hardware constants declarations
 green = LED(27)
@@ -36,6 +40,7 @@ samples_goal = 30
 
 buffer_time = 0.5
 
+
 def main():
     try:
       time.sleep(buffer_time)
@@ -49,16 +54,14 @@ def main():
             samples_taken = samples_taken + 1
           if(samples_takenples == samples_goal):
             red.on()
-    else:
-      samples_taken = 0
-      print("off")
-      green.off()
-      red.off()
-
+      else:
+         samples_taken = 0
+         print("off")
+         green.off()
+         red.off()
     except:
-        print("Keyboard Interrupt")
-        break
+      print("keyboard int")        
 
-
-while True:
+while(True):
     main()
+
